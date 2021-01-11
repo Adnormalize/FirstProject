@@ -30,6 +30,9 @@ public class PlayerControler : MonoBehaviour
         Vector3 _movement = new Vector3(_moveHorizontal, 0.0f, _moveVertical);
 
         _rigidBody.AddForce(_movement * _speed);
+
+        transform.LookAt(_movement + transform.position);
+
     }
 
     private void JumpLogic()
