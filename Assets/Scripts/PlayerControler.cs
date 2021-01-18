@@ -7,22 +7,65 @@ public class PlayerControler : MonoBehaviour
 {
     [SerializeField] private float _speed;
     [SerializeField] private float _jumpForce;
+    [SerializeField] private bool _thereIsAKey = false;
+    [SerializeField] private int _health = 100;
 
     private bool _isGrounded;
     private Rigidbody _rigidBody;
+    private Collider _InteractsWith;
 
     private void Start()
     {
         _rigidBody = GetComponent<Rigidbody>();
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
-        MovementLogic();
-        JumpLogic();
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            InteractingWithObjects(_InteractsWith);
+        }
     }
 
-    private void MovementLogic()
+    private void FixedUpdate()
+    {
+        Movement();
+        Jump();
+    }
+
+    #region TriggerAndCollosoin
+    private void OnTriggerEnter(Collider trigger)
+    {
+        _InteractsWith = trigger;
+    }
+
+    private void OnTriggerExit(Collider trigger)
+    {
+        _InteractsWith = null;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        IsGroundedUpdate(collision, true);
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        IsGroundedUpdate(collision, false);
+    }
+
+    #endregion
+
+    #region Functions
+
+    private void IsGroundedUpdate(Collision collision, bool value)
+    {
+        if (collision.gameObject.tag == "Ground")
+        {
+            _isGrounded = value;
+        }
+    }
+    private void Movement()
     {
         float _moveHorizontal = Input.GetAxis("Horizontal");
         float _moveVertical = Input.GetAxis("Vertical");
@@ -35,7 +78,7 @@ public class PlayerControler : MonoBehaviour
 
     }
 
-    private void JumpLogic()
+    private void Jump()
     {
         if (Input.GetAxis("Jump") > 0)
         {
@@ -45,22 +88,34 @@ public class PlayerControler : MonoBehaviour
             }
         }
     }
-
-    void OnCollisionEnter(Collision collision)
+    private void InteractingWithObjects(Collider trigger)
     {
-        IsGroundedUpate(collision, true);
-    }
-
-    void OnCollisionExit(Collision collision)
-    {
-        IsGroundedUpate(collision, false);
-    }
-
-    private void IsGroundedUpate(Collision collision, bool value)
-    {
-        if (collision.gameObject.tag == ("Ground"))
+        if (trigger == null)
         {
-            _isGrounded = value;
+            return;
+        }
+        else
+        {
+            if (trigger.gameObject.tag == "Key")
+            {
+                _thereIsAKey = true;
+                Destroy(trigger.gameObject);
+            }
+            else if (trigger.gameObject.tag == "Medicine")
+            {
+                _health += 50;
+                Destroy(trigger.gameObject);
+            }
+
+            if (trigger.gameObject.tag == "Door")
+            {
+                if (_thereIsAKey == true)
+                {
+                    Destroy(trigger.gameObject);
+                }
+            }
         }
     }
+
+    #endregion
 }
